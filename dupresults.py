@@ -26,8 +26,7 @@ df = df[0].str.split('--', n=5, expand=True)
 # Remove regular expression
 df[0] = df[0].str.replace(r'REPLY', '')
 df[1] = df[1].str.replace(r'%GEN-I-RESULTS,', '')
-df[1] = df[1].str.replace(r'\n', '',)
-# df[1] = df[1].str.repalce(r'', '')
+df[1] = df[1].str.replace(r'\n', '', regex=True)
 
 # Rename columns
 df.columns = ['time', 'results']
@@ -41,41 +40,31 @@ df['edited'] = df['edited'].str.replace(r': \d{1,2},\d{1,2},\d{1,2},\d{1,2}|'
                                         r': \d{1,2}|'
                                         r'\+\d{1,2}|'
                                         r',\d|'
-                                        r',', '')
+                                        r',', '', regex=True)
+
+# Creat two dataframes, first result entry and second result entry
+df_first_entry = df[df.duplicated(['edited'], keep='last')]  # Considers first entry as duplicate
+df_last_entry = df[df.duplicated(['edited'], keep='first')]  # Considers last entry as duplicate
+
+# print(df_first_entry.to_string())
+# print(df_last_entry.to_string())
+
+df_first_entry.columns = ['first_time', 'first_results', 'first_transaction']
+df_last_entry.columns = ['last_time', 'last_results', 'last_transaction']
+
+# print(df_first_entry.to_string())
+# print(df_last_entry.to_string())
+# df_results_change = pd.concat([df_first_entry, df_last_entry], keys=['first_entry', 'last_entry'], axis=1, join='outer', sort=False)
+df_results_change = pd.concat([df_first_entry, df_last_entry], axis=1, sort=True)
+
+# Drop NAN cell values
+df_results_change = df_results_change.apply(lambda x: pd.Series(x.dropna().values))
+# Drop columns
+df_results_change = df_results_change.drop(['first_transaction', 'last_transaction'], axis=1)
 
 
-df_first_entry = df[df.duplicated(['edited'], keep='last')]
-df_last_entry = df[df.duplicated(['edited'], keep='first')]
-# df = df.duplicated(['results', 'edited'], keep='first')
-print(df_first_entry.to_string())
-print(df_last_entry.to_string())
+print(df_results_change.to_string())
 
 
-
-
-
-
-
-
-# REGEX example = BNR Sat RACE 2 RESULTS: 1,3,2,4
-# duplicates = []
-# results_list = []
-# results_regex = re.compile(r"[A-Z]{3}[a-zA-Z]{\s3}\sRACE\s(\d{1,2})\sRESULTS:")
-# # results_regex = re.compile(r"[A-Z]{3}\s[a-zA-Z]{3}\sRACE\s(\d{1,2})\sRESULTS:\s\d{1,2},\d{1,2},\d{1,2},\d{1,2}")
-# # regex_1 = re.compile(r"[A-Z]{3}\s[a-zA-Z]{3}\sRACE\s(\d{1,2})\sRESULTS:")
-# # regex_2 = re.compile(r"[A-Z]{3}\s[a-zA-Z]{3}\sRACE\s(\d{1,2})\sRESULTS:")
-#
-#
-# with open('viclog.txt', 'r', encoding='utf-8') as file:
-#     contents = file.read()
-#     results = results_regex.finditer(contents)
-#     for result in results:
-#         print(result)
-#         results_list.append(result)
-#
-# print('----------')
-# print(results_list)
-# print('----------')
-#
 
 
