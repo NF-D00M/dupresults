@@ -65,6 +65,4 @@ df_results_change = df_results_change.drop(['first_transaction', 'last_transacti
 
 print(df_results_change.to_string())
 
-
-
-
+# This is a TEST
